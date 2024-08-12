@@ -15,11 +15,12 @@ processed_matrix <- function (obj, groupings = "ident", layer = "RNA"){
 #For simplicity, aka until I confirm that all Seurat objects have name@meta.data
 #ie. items are always treated as subclasses of the prior item
 #What if length(groupings) == 0?
-generate_heatmap_annotation <- function(obj_df, groupings, cols = c("blue", "red", "purple", "yellow", "darkgreen", "red", "black", "lightgray")){
+generate_heatmap_annotation <- function(obj_df, groupings, cols = c("red", "blue", "purple", "yellow", "darkgreen", "red", "black", "lightgray")){
   gr <- lapply(groupings, function(x){
     unique(obj_df[[x]])
   })
   names(gr) <- groupings
+
   column_df <- create_column_df(gr)
   cols_list <- create_cols_list(gr, cols)
 
@@ -64,7 +65,7 @@ create_cols_list <- function(groups, cols){
 }
 
 #Returns a function
-fire_up_heatmap <- function(column_ann, rsf, col_ramp = colorRamp2(quantile(res_scaled, c(0.05, 0.5, 0.95)), c("blue", "black", "red"))){
+fire_up_heatmap <- function(title, column_ann, rsf, colr =c("blue", "black", "red")){
 
   fire <- function(genes){
     setdiff(genes, rownames(rsf))
@@ -82,8 +83,8 @@ fire_up_heatmap <- function(column_ann, rsf, col_ramp = colorRamp2(quantile(res_
       show_row_names = T, row_names_side = "left",
       show_column_names = F,
       show_column_dend = F,
-      column_title = t,
-      col = col_ramp,
+      column_title = title,
+      col = colorRamp2(quantile(res_scaled, c(0.05, 0.5, 0.95)), colr),
       column_dend_height = unit(0, "mm"),
       show_row_dend = F, #Not to put row dendrogram on the left
       row_names_gp = gpar(fontsize = 8, fontfamily = "sans", fontface = "bold"))
