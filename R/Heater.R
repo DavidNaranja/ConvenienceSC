@@ -15,10 +15,13 @@ processed_matrix <- function (obj, groupings = "ident", layer = "RNA"){
 #For simplicity, aka until I confirm that all Seurat objects have name@meta.data
 #ie. items are always treated as subclasses of the prior item
 #What if length(groupings) == 0?
-generate_heatmap_annotation <- function(obj_df, groupings, cols = NULL){
-  column_df <- create_column_df(obj_df, groupings)
-
-  cols_list <- create_cols_list(cols)
+generate_heatmap_annotation <- function(obj_df, groupings, cols = c("blue", "red", "purple", "yellow", "darkgreen", "red", "black", "lightgray")){
+  gr <- lapply(groupings, function(x){
+    unique(obj_df[[x]])
+  })
+  names(gr) <- groupings
+  column_df <- create_column_df(gr)
+  cols_list <- create_cols_list(gr, cols)
 
   ComplexHeatmap::HeatmapAnnotation(
     df = column_df,
@@ -29,14 +32,8 @@ generate_heatmap_annotation <- function(obj_df, groupings, cols = NULL){
     show_legend = T)
 }
 
-create_column_df <- function(obj_df, groupings){
-  groups <- lapply(groupings, function(x){
-    unique(obj_df[[x]])
-  })
-  num_unique_per_group <- unlist(lapply(groups, function(y){
-    length(y)
-  }))
-  product_sum <- prod(num_unique_per_group)
+create_column_df <- function(groups){
+  product_sum <- prod(lengths(groups)) #Gets the highest number of possible group configurations
 
   groups <- lapply(groups, function(x){
     rep(x, product_sum/length(x))
@@ -44,18 +41,26 @@ create_column_df <- function(obj_df, groupings){
 
   return (groups)
 }
-create_cols_list <- function(cols){
-  if (is.null(cols)){
-    lengths <- lapply(groupings, function(x){
-      length(unique(obj_df[[x]]))
-    })
-
-    return (NULL) #Placeholder
-  }
-  else {
+create_cols_list <- function(groups, cols){
+  if (is.list(cols)){
     return (cols)
   }
 
+  cols_col <- lapply(1:length(groups), function(i){
+    group <- unlist(groups[i])
+    group_length <- length(group)
+
+    col_fun = colorRamp2::colorRamp2(c(0, 1), c(cols[i*2-1], cols[i*2]))
+    group_cols <- lapply(1:group_length, function(y){
+      col_fun(1/group_length * y)
+    })
+    group_cols <- unlist(group_cols)
+    names(group_cols) <- group
+    unlist(group_cols)
+  })
+
+  names(cols_col) <- names(groups)
+  return (cols_col)
 }
 
 #Returns a function
@@ -86,6 +91,5 @@ fire_up_heatmap <- function(column_ann, rsf, col_ramp = colorRamp2(quantile(res_
   }
   return (fire)
 }
-
 
 

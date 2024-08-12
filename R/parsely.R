@@ -29,6 +29,8 @@ parse_genes <- function(x, keep = NULL, sep = ","){
   }
 }
 
+
+
 #' Gets list of genes from gsea tsv
 #'
 #' @param x String path to tsv
@@ -51,7 +53,7 @@ parse_rds_vector <- function(x){
   parse_genes(readRDS(x))
 }
 
-#describe as for when the data is just a mess of text. Default regex is for Harmonizome
+
 #' Grab all genes from a url text file
 #'
 #' @param x String url
